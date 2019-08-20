@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
-# Fix to find catchment information for applicants identified as "No catchment"
-# 10 Jan 2018
-# By Jack Phillips
+# Run in the acadonda3 cd .\Anaconda3\
+# comand in terminal is ./python "Path.py"
 
 # First run sh bin/download_data.sh
 
