@@ -3,7 +3,6 @@
 # Run in the acadonda3 cd .\Anaconda3\
 # comand in terminal is ./python "Path.py"
 
-# First run sh bin/download_data.sh
 
 # Imports
 import pandas as pd 
