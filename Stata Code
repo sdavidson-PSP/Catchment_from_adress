@@ -1,0 +1,54 @@
+//import download and import into stata this file from salesforce, making sure to remove any rows that have incomplete addresses that can't be geocoded: https://applyphillycharter.lightning.force.com/lightning/r/Report/00O2G000006VFjXUAW/view
+	rename v2 application_id
+	replace city="Philadelphia"
+	tostring zipcode,force replace
+	gen fulladdress = streetstreetname +", "+city +", "+state +" "+zipcode
+	preserve
+	duplicates drop applicationid ,force
+	opencagegeo, key(1379bb2f69da4beaa878c75bcb573838) fulladdress(fulladdress)
+	drop g_country g_state g_county g_city g_postcode g_street g_number g_confidence g_formatted g_quality
+	rename g_lat latitude
+	rename g_lon longitude
+
+//export and run through python code to get catchment names
+//use the output file from stata to update the field Catchment Name on object Applications
+
+	restore
+	keep if !mi(applicationschoolschool )
+	tempfile ascupdate
+	save `ascupdate'
+	clear
+
+//import output file from python with catchment names
+	tostring zipcode ,force replace
+	merge 1:m applicationid using `ascupdate'
+	keep if _merge==3
+	drop _merge
+	keep if applicationschoolschool == "The Philadelphia Charter School for Arts and Sciences" |applicationschoolschool == "Mastery Charter Gratz Prep Middle School" |applicationschoolschool == "Mastery Charter School: Clymer Elementary" |applicationschoolschool == "Mastery Charter School: Pastorius-Richardson Elementary" |applicationschoolschool == "ASPIRA John B. Stetson Charter School" |applicationschoolschool == "ASPIRA Olney Charter High School" |applicationschoolschool == "Global Leadership Academy Southwest at Huey" |applicationschoolschool == "Lindley Academy Charter School at Birney" |applicationschoolschool == "Mastery Charter School: Harrity Elementary" |applicationschoolschool == "Mastery Charter School: John Wister Elementary" |applicationschoolschool == "Mastery Charter School: Mann Elementary" |applicationschoolschool == "Mastery Charter School: Frederick Douglass" |applicationschoolschool == "Mastery Charter School: Grover Cleveland Campus" |applicationschoolschool == "Universal Alcorn Elementary School" |applicationschoolschool == "Universal Alcorn Middle Years Academy" |applicationschoolschool == "Universal Bluford Charter School" |applicationschoolschool == "Universal Creighton Charter School" |applicationschoolschool == "Universal Daroff Charter School" |applicationschoolschool == "Universal Vare Charter School" |applicationschoolschool == "Belmont Academy Charter School" |applicationschoolschool == "Belmont Charter School" |applicationschoolschool == "Universal Audenried Charter School" |applicationschoolschool == "Mastery Charter School: Simon Gratz High School" |applicationschoolschool == "Mastery Charter School: Smedley Elementary" |applicationschoolschool == "Memphis Street Academy Charter School"
+	replace outofcatchment =0 if applicationschoolschool == "The Philadelphia Charter School for Arts and Sciences" & catchment_name =="PCSAS Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "Mastery Charter Gratz Prep Middle School" & catchment_name =="Mastery CS (Clymer) Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "Mastery Charter School: Clymer Elementary" & catchment_name =="Mastery CS (Clymer) Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "Mastery Charter School: Pastorius-Richardson Elementary" & catchment_name =="Mastery CS (Pastorius) Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "ASPIRA John B. Stetson Charter School" & (catchment_name =="Cramp Catchment Area" | catchment_name == "Elkin Catchment Area")
+	replace outofcatchment =0 if applicationschoolschool == "ASPIRA Olney Charter High School" & (catchment_name =="American Paradigm CS (Birney) Catchment Area" |catchment_name == "Barton Catchment Area"| catchment_name == "Cooke Catchment Area" |catchment_name == "Marshall, T Catchment Area"| catchment_name == "Morrison Catchment Area"| catchment_name == "Olney ES Catchment Area")
+	replace outofcatchment =0 if applicationschoolschool == "Global Leadership Academy Southwest at Huey" & catchment_name =="Global Leadership CS (Huey) Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "Lindley Academy Charter School at Birney" & catchment_name =="American Paradigm CS (Birney) Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "Mastery Charter School: Harrity Elementary" & catchment_name =="Mastery CS (Harrity) Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "Mastery Charter School: John Wister Elementary" & catchment_name =="Mastery CS (Wister) Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "Mastery Charter School: Mann Elementary" & catchment_name =="Mastery CS (Mann) Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "Mastery Charter School: Frederick Douglass" & catchment_name =="Mastery CS (Douglass) Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "Mastery Charter School: Grover Cleveland Campus" & catchment_name =="Mastery CS (Cleveland) Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "Universal Alcorn Elementary School" & catchment_name =="Universal CS (Alcorn) Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "Universal Alcorn Middle Years Academy" & catchment_name =="Universal CS (Alcorn) Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "Universal Bluford Charter School" & catchment_name =="Universal CS (Bluford) Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "Universal Creighton Charter School" & catchment_name =="Universal CS (Creighton) Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "Universal Daroff Charter School" & catchment_name =="Universal CS (Daroff) Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "Universal Vare Charter School" & catchment_name =="Girard Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "Belmont Academy Charter School" & catchment_name =="Belmont CS Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "Belmont Charter School" & catchment_name =="Belmont CS Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "Universal Audenried Charter School" & (catchment_name =="Arthur Catchment Area" | catchment_name == "Girard Catchment Area" | catchment_name == "Universal CS (Alcorn) Catchment Area")
+	replace outofcatchment =0 if applicationschoolschool == "Mastery Charter School: Simon Gratz High School" & (catchment_name =="Bethune Catchment Area" | catchment_name == "Duckrey Catchment Area" | catchment_name == "Kenderton Catchment Area" | catchment_name == "Mastery CS (Cleveland) Catchment Area" | catchment_name == "Mastery CS (Clymer) Catchment Area" | catchment_name =="Steel Catchment Area")
+	replace outofcatchment =0 if applicationschoolschool == "Mastery Charter School: Smedley Elementary" & catchment_name =="Mastery CS (Smedley) Catchment Area"
+	replace outofcatchment =0 if applicationschoolschool == "Memphis Street Academy Charter School" & (catchment_name =="Richmond Catchment Area" | catchment_name == "Sheridan Catchment Area" | catchment_name == "Webster Catchment Area" | catchment_name == "Willard Catchment Area")
+
+//if any rows in the outofcatchment column == 0, export file and update outofcatchment field on ASC
